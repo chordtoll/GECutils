@@ -6,8 +6,54 @@ import time
 import serial
 import sys
 import Queue
+
+from selenium import webdriver
+
+driver=webdriver.Chrome()
+driver.set_page_load_timeout(60)
+
 PORT_NUMBER = 8080
 
+def o16(s):
+    return ord(s[0])+ord(s[1])*256
+
+def s16(s):
+    os=o16(s)
+    if os&0x8000:
+        os=-(0x10000-os)
+    return os
+
+def o32(s):
+    return ord(s[0])+ord(s[1])*256+ord(s[2])*256*256+ord(s[3])*256*256*256
+
+def gpst(s):
+    os=o32(s)
+    h=os/10000
+    m=(os/100)%100
+    s=os%100
+    return "%02d:%02d:%02d"%(h,m,s)
+def gpsla(s):
+    os=o32(s)
+    n=False
+    if os&0x80000000:
+        n=True
+    os&=0x7FFFFFFF
+    d=os/1000000
+    m=((os%1000000)/10000.0)/60
+    print d,m
+    return (d+m)*(-1 if n else 1)
+def gpslo(s):
+    os=o32(s)
+    n=False
+    if os&0x80000000:
+        n=True
+    os&=0x7FFFFFFF
+    d=os/1000000
+    m=((os%1000000)/10000.0)/60
+    print d,m
+    return (d+m)*(-1 if n else 1)
+def gpsa(s):
+    return o32(s)/10.0
 
 def sanitize(s):
     o=""
@@ -53,20 +99,52 @@ class myHandler(BaseHTTPRequestHandler):
                     }
                 </script>
             </head>
-            <body onload="setInterval(reloadmsg,1000)">
-            <form accept-charset="UTF-8"><textarea cols=60 rows=30 id="messages">Messages</textarea><textarea cols=120 rows=30 id="messagesh">Messages</textarea></form>
+            <body onload="setInterval(reloadmsg,10000)">
+            <form accept-charset="UTF-8"><textarea cols=80 rows=30 id="messages">Messages</textarea><textarea cols=120 rows=30 id="messagesh">Messages</textarea></form>
             <form accept-charset="UTF-8" action="/" method="get"><input type="text"name="message"/><input type="submit"/></form>
             </body>
             """)
         if self.path=='/messages.txt':
             for i in thread1.txes:
-                for j in xrange(0,len(i),24):
-                    self.wfile.write(sanitize(i[j:j+24])+'\n')
+                self.wfile.write("V:%02x Y:%02x S:%04x\n"%(ord(i[0]),ord(i[1]),o16(i[2:4])))
+                self.wfile.write("T:%08x L:%08x L:%08x A:%08x\n"%(o32(i[4:8]),o32(i[8:12]),o32(i[12:16]),o32(i[16:20])))
+                self.wfile.write("hL:")
+                for n in xrange(12):
+                    self.wfile.write("%04x,"%o16(i[20+n*2:22+n*2]))
+                self.wfile.write("\n")
+                self.wfile.write("hR:")
+                for n in xrange(12):
+                    self.wfile.write("%04x,"%o16(i[44+n*2:46+n*2]))
+                self.wfile.write("\n")
+                self.wfile.write("hD:")
+                for n in xrange(12):
+                    self.wfile.write("%04x,"%o16(i[68+n*2:70+n*2]))
+                self.wfile.write("\n")
+                self.wfile.write("vH:%04x vL:%04x vD:%04x\n"%(o16(i[92:94]),o16(i[94:96]),o16(i[96:98])))
+                self.wfile.write("cX:")
+                for n in xrange(12):
+                    self.wfile.write("%04x,"%o16(i[98+n*2:100+n*2]))
+                self.wfile.write("\n")
+                self.wfile.write("cY:")
+                for n in xrange(12):
+                    self.wfile.write("%04x,"%o16(i[122+n*2:124+n*2]))
+                self.wfile.write("\n")
+                self.wfile.write("CH:")
+                for n in xrange(15):
+                    self.wfile.write("%04x,"%o16(i[146+n*2:148+n*2]))
+                self.wfile.write("\n")
+                self.wfile.write("CL:")
+                for n in xrange(15):
+                    self.wfile.write("%04x,"%o16(i[176+n*2:178+n*2]))
+                self.wfile.write("\n")
+                self.wfile.write("SUP:%08x\n"%(o32(i[206:210])))
                 self.wfile.write('-'*24+'\n')
         if self.path=='/messages.hex':
             for i in thread1.txes:
                 for j in xrange(0,len(i),24):
-                    self.wfile.write(repr(i[j:j+24])+'\n')
+                    for k in i[j:j+24]:
+                        self.wfile.write("%2x"%ord(k))
+                    self.wfile.write('\n')
                 self.wfile.write('-'*24*4+'\n')
         return
 
@@ -125,6 +203,7 @@ class rbthread(threading.Thread):
                         print "Echo off"
                         echo=False
                         self.send("OK\r\n")
+                        self.txes.append('\xEE'*340)
                     elif cmd=='AT&K0':
                         print "Flow control off"
                         self.send("OK\r\n")
@@ -140,7 +219,7 @@ class rbthread(threading.Thread):
                         self.send("OK\r\n")
                     elif cmd=='AT+SBDIX':
                         print "Transaction running"
-                        time.sleep(5)
+                        time.sleep(1)
                         self.send("+SBDIX,0,")
                         self.send(str(momsn))
                         self.send(",")
@@ -158,7 +237,21 @@ class rbthread(threading.Thread):
                             self.send("0,0,0,0\r\n")
                         self.send("OK\r\n")
                         momsn+=1
+
                         if txbuf:
+                            with open("packets.csv",'a') as f:
+                                f.write('%f,%d,%d,%d,'%(time.time(),ord(txbuf[0]),ord(txbuf[1]),o16(txbuf[2:4])))
+                                f.write('%s,%f,%f,%f,'%(gpst(txbuf[4:8]),gpsla(txbuf[8:12]),gpslo(txbuf[12:16]),gpsa(txbuf[16:20])))
+                                f.write('%d,%d,%d,%d\n'%(o16(txbuf[92:94]),o16(txbuf[94:96]),o16(txbuf[96:98]),o32(txbuf[206:210])))
+                            with open("meas.csv",'a') as f:
+                                for n in xrange(12):
+                                    f.write("%f,%d,%d,"%(time.time(),o16(txbuf[2:4]),n))
+                                    f.write("%d,"%o16(txbuf[20+n*2:22+n*2]))
+                                    f.write("%d,"%o16(txbuf[44+n*2:46+n*2]))
+                                    f.write("%d,"%o16(txbuf[68+n*2:70+n*2]))
+                                    f.write("%d,"%s16(txbuf[98+n*2:100+n*2]))
+                                    f.write("%d\n"%s16(txbuf[122+n*2:124+n*2]))
+                            driver.get("https://www.google.com/maps/?q=%f,%f"%(gpsla(txbuf[8:12]),gpslo(txbuf[12:16])))
                             self.txes.append(txbuf)
                             txbuf=""
                     elif cmd=='AT+SBDRB':
