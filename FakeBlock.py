@@ -99,20 +99,26 @@ class myHandler(BaseHTTPRequestHandler):
                     }
                 </script>
             </head>
-            <body onload="setInterval(reloadmsg,10000)">
+            <body onload="setInterval(reloadmsg,1000)">
             <form accept-charset="UTF-8"><textarea cols=80 rows=30 id="messages">Messages</textarea><textarea cols=120 rows=30 id="messagesh">Messages</textarea></form>
             <form accept-charset="UTF-8" action="/" method="get"><input type="text"name="message"/><input type="submit"/></form>
             </body>
             """)
+            
+            
+        #h2 does not work
+        #v1 does not work
+        #v2 does not work
+        
         if self.path=='/messages.txt':
             for i in thread1.txes:
                 self.wfile.write("V:%02x Y:%02x S:%04x\n"%(ord(i[0]),ord(i[1]),o16(i[2:4])))
                 self.wfile.write("T:%08x L:%08x L:%08x A:%08x\n"%(o32(i[4:8]),o32(i[8:12]),o32(i[12:16]),o32(i[16:20])))
-                self.wfile.write("hL:")
+                self.wfile.write("h1:")
                 for n in xrange(12):
                     self.wfile.write("%04x,"%o16(i[20+n*2:22+n*2]))
                 self.wfile.write("\n")
-                self.wfile.write("hR:")
+                self.wfile.write("h2:")
                 for n in xrange(12):
                     self.wfile.write("%04x,"%o16(i[44+n*2:46+n*2]))
                 self.wfile.write("\n")
@@ -120,7 +126,7 @@ class myHandler(BaseHTTPRequestHandler):
                 for n in xrange(12):
                     self.wfile.write("%04x,"%o16(i[68+n*2:70+n*2]))
                 self.wfile.write("\n")
-                self.wfile.write("vH:%04x vL:%04x vD:%04x\n"%(o16(i[92:94]),o16(i[94:96]),o16(i[96:98])))
+                self.wfile.write("vH:%04x v1:%04x vD:%04x\n"%(o16(i[92:94]),o16(i[94:96]),o16(i[96:98])))
                 self.wfile.write("cX:")
                 for n in xrange(12):
                     self.wfile.write("%04x,"%o16(i[98+n*2:100+n*2]))
@@ -251,6 +257,11 @@ class rbthread(threading.Thread):
                                     f.write("%d,"%o16(txbuf[68+n*2:70+n*2]))
                                     f.write("%d,"%s16(txbuf[98+n*2:100+n*2]))
                                     f.write("%d\n"%s16(txbuf[122+n*2:124+n*2]))
+                            with open("cond.csv",'a') as f:
+                                for n in xrange(15):
+                                    f.write("%f,%d,%d,"%(time.time(),o16(txbuf[2:4]),n))
+                                    f.write("%d,"%o16(txbuf[146+n*2:148+n*2]))
+                                    f.write("%d\n"%o16(txbuf[176+n*2:178+n*2]))
                             driver.get("https://www.google.com/maps/?q=%f,%f"%(gpsla(txbuf[8:12]),gpslo(txbuf[12:16])))
                             self.txes.append(txbuf)
                             txbuf=""
