@@ -108,11 +108,11 @@ class myHandler(BaseHTTPRequestHandler):
             for i in thread1.txes:
                 self.wfile.write("V:%02x Y:%02x S:%04x\n"%(ord(i[0]),ord(i[1]),o16(i[2:4])))
                 self.wfile.write("T:%08x L:%08x L:%08x A:%08x\n"%(o32(i[4:8]),o32(i[8:12]),o32(i[12:16]),o32(i[16:20])))
-                self.wfile.write("hL:")
+                self.wfile.write("h1:")
                 for n in xrange(12):
                     self.wfile.write("%04x,"%o16(i[20+n*2:22+n*2]))
                 self.wfile.write("\n")
-                self.wfile.write("hR:")
+                self.wfile.write("h2:")
                 for n in xrange(12):
                     self.wfile.write("%04x,"%o16(i[44+n*2:46+n*2]))
                 self.wfile.write("\n")
@@ -120,7 +120,7 @@ class myHandler(BaseHTTPRequestHandler):
                 for n in xrange(12):
                     self.wfile.write("%04x,"%o16(i[68+n*2:70+n*2]))
                 self.wfile.write("\n")
-                self.wfile.write("vH:%04x vL:%04x vD:%04x\n"%(o16(i[92:94]),o16(i[94:96]),o16(i[96:98])))
+                self.wfile.write("v1:%04x v2:%04x vD:%04x\n"%(o16(i[92:94]),o16(i[94:96]),o16(i[96:98])))
                 self.wfile.write("cX:")
                 for n in xrange(12):
                     self.wfile.write("%04x,"%o16(i[98+n*2:100+n*2]))
