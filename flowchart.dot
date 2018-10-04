@@ -1,0 +1,88 @@
+digraph G {
+
+	subgraph cluster_1 {
+		InitGPIO;
+		InitUART;
+		InitSPI;
+		InitPICADC;
+		InitTimer;
+		InitUART -> InitGPS;
+		InitUART -> InitRB;
+		InitGPS -> InitInterrupt;
+		InitRB -> InitInterrupt;
+		InitI2C -> InitMagnetometer;
+		InitI2C -> InitAltimeter;
+		InitGPS -> InitPPS;
+		InitPPS -> InitLoopDelay;
+		InitMagnetometer -> InitWatchdog;
+		InitAltimeter -> InitWatchdog;
+		InitTimer -> InitWatchdog;
+		InitPICADC -> InitWatchdog;
+		InitSPI -> InitWatchdog;
+		InitLoopDelay -> InitWatchdog;
+		InitInterrupt -> InitWatchdog;
+		InitGPIO -> InitWatchdog;
+		label = "Initialization";
+		color=blue
+	}
+	
+	InitWatchdog -> BeginLoop [ltail=cluster_1,lhead=cluster_2];
+	
+	subgraph cluster_2 {
+		BeginLoop -> ReadMagnetometer;
+		ReadADCH -> ReadMagnetometer;
+		ReadMagnetometer -> ReadADCH;
+		ReadADCH -> TransmitPacket;
+		
+		BeginLoop -> ReadADCV;
+		ReadADCV -> TransmitPacket;
+		
+		BeginLoop -> ReadGPS;
+		ReadGPS -> TransmitPacket;
+		
+		TransmitPacket -> BeginLoop;
+		
+		label = "Main Loop";
+		color=blue
+	}
+	
+	TransmitPacket -> BeginConductivity [ltail=cluster_2,lhead=cluster_3];
+	
+	subgraph cluster_3 {
+		BeginConductivity;
+		BeginConductivity -> ChargeGround;
+		ChargeGround -> ChargeUp;
+		ChargeGround -> ChargeDown;
+		ChargeUp -> ChargeNone;
+		ChargeDown -> ChargeNone;
+		ChargeNone -> TransmitConductivity;
+		BeginConductivity -> ReadADCVC;
+		BeginConductivity -> ReadAltimeterTemperature;
+		BeginConductivity -> ReadSupIl0;
+		BeginConductivity -> ReadConductivity;
+		ReadConductivity -> ReadConductivity;
+		ReadConductivity -> TransmitConductivity;
+		ReadSupIl0 -> ReadSupIl1;
+		ReadSupIl1 -> ReadSupIl2;
+		ReadSupIl2 -> ReadSupIh0;
+		ReadSupIh0 -> ReadSupIh1;
+		ReadSupIh1 -> ReadSupIh2;
+		ReadSupIh2 -> ReadSupT0;
+		ReadSupT0 -> ReadSupT1;
+		ReadSupT1 -> ReadSupT2;
+		ReadSupT2 -> TransmitConductivity;
+		ReadAltimeterTemperature -> ReadAltimeterPressure;
+		ReadAltimeterPressure -> TransmitConductivity;
+		TransmitConductivity -> BeginLoop;
+		
+		label = "Conductvity Loop";
+		color=blue
+	}
+	
+	Begin -> InitGPIO;
+	Begin -> InitUART;
+	Begin -> InitI2C;
+	Begin -> InitSPI;
+	Begin -> InitPICADC;
+	Begin -> InitTimer;
+}

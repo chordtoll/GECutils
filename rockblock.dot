@@ -1,0 +1,15 @@
+digraph G {
+  Begin -> ATE0;
+  ATE0 -> "AT&K0" [label=OK];
+  "AT&K0" -> "AT+SBDMTA=0" [label=OK];
+  "AT+SBDMTA=0" -> "AT+SBDD0" [label=OK];
+  "AT+SBDD0" -> "Idle" [label=OK];
+  "Idle" -> "AT+SBDWB=340" [label="Transmit Packet"];
+  "AT+SBDWB=340" -> "[Packet Data]" [label=READY];
+  "[Packet Data]" -> "[Checksum]";
+  "[Checksum]" -> "AT+SBDIX" [label=OK];
+  "AT+SBDIX" -> "Idle" [label="No message"];
+  "AT+SBDIX" -> "AT+SBDRB" [label="Message"];
+  "AT+SBDRB" -> "Idle" [label="Return rx'd packet"];
+
+}
