@@ -5,6 +5,7 @@ import urllib
 import time
 import serial
 import sys
+import os
 import Queue
 
 from selenium import webdriver
@@ -245,6 +246,8 @@ class rbthread(threading.Thread):
                         momsn+=1
 
                         if txbuf:
+                            with open(os.path.join("packets","packet.%d.%d.bin"%(time.time(),o16(txbuf[2:4]))),'wb') as f:
+                              f.write(txbuf)
                             with open("packets.csv",'a') as f:
                                 f.write('%f,%d,%d,%d,'%(time.time(),ord(txbuf[0]),ord(txbuf[1]),o16(txbuf[2:4])))
                                 f.write('%s,%f,%f,%f,'%(gpst(txbuf[4:8]),gpsla(txbuf[8:12]),gpslo(txbuf[12:16]),gpsa(txbuf[16:20])))
