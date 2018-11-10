@@ -10,6 +10,8 @@ import Queue
 
 from selenium import webdriver
 
+import datetime
+
 driver=webdriver.Chrome()
 driver.set_page_load_timeout(60)
 
@@ -112,7 +114,7 @@ class myHandler(BaseHTTPRequestHandler):
         #v2 does not work
         
         if self.path=='/messages.txt':
-            for i in thread1.txes:
+            for i,Eee in zip(thread1.txes,thread1.txTimes):
                 self.wfile.write("V:%02x Y:%02x S:%04x\n"%(ord(i[0]),ord(i[1]),o16(i[2:4])))
                 self.wfile.write("T:%08x L:%08x L:%08x A:%08x\n"%(o32(i[4:8]),o32(i[8:12]),o32(i[12:16]),o32(i[16:20])))
                 self.wfile.write("h1:")
@@ -145,14 +147,18 @@ class myHandler(BaseHTTPRequestHandler):
                     self.wfile.write("%04x,"%o16(i[176+n*2:178+n*2]))
                 self.wfile.write("\n")
                 self.wfile.write("SUP:%08x\n"%(o32(i[206:210])))
-                self.wfile.write('-'*24+'\n')
+                self.wfile.write(Eee+'-'*((24*4)-8)+'\n')
+                
+                
         if self.path=='/messages.hex':
-            for i in thread1.txes:
+            for i,Eee in zip(thread1.txes,thread1.txTimes):
                 for j in xrange(0,len(i),24):
                     for k in i[j:j+24]:
                         self.wfile.write("%2x"%ord(k))
                     self.wfile.write('\n')
-                self.wfile.write('-'*24*4+'\n')
+                self.wfile.write(Eee+'-'*((24*4)-8)+'\n')
+                
+                
         return
 
 doRun=1
@@ -163,6 +169,7 @@ class rbthread(threading.Thread):
         self.ser=ser
         self.messages=Queue.Queue()
         self.txes=[]
+        self.txTimes=[]
     def run(self):
         cmd=""
         echo=False
@@ -211,6 +218,16 @@ class rbthread(threading.Thread):
                         echo=False
                         self.send("OK\r\n")
                         self.txes.append('\xEE'*340)
+                        
+                        
+                        thisNow = datetime.datetime.now()
+                        hour = thisNow.hour
+                        min = thisNow.minute
+                        sec = thisNow.second
+                        timeStr = str(hour).zfill(2) + ":" + str(min).zfill(2) + ":" + str(sec).zfill(2)
+                        
+                        
+                        self.txTimes.append(timeStr)
                     elif cmd=='AT&K0':
                         print "Flow control off"
                         self.send("OK\r\n")
@@ -267,6 +284,16 @@ class rbthread(threading.Thread):
                                     f.write("%d\n"%o16(txbuf[176+n*2:178+n*2]))
                             driver.get("https://www.google.com/maps/?q=%f,%f"%(gpsla(txbuf[8:12]),gpslo(txbuf[12:16])))
                             self.txes.append(txbuf)
+                        
+                        
+                            thisNow = datetime.datetime.now()
+                            hour = thisNow.hour
+                            min = thisNow.minute
+                            sec = thisNow.second
+                            timeStr = str(hour).zfill(2) + ":" + str(min).zfill(2) + ":" + str(sec).zfill(2)
+                        
+                        
+                            self.txTimes.append(timeStr)
                             txbuf=""
                     elif cmd=='AT+SBDRB':
                         print "Read RX buffer",
@@ -304,13 +331,13 @@ with serial.Serial(sys.argv[1], 19200, timeout=1) as ser:
     thread1.start()
 
     try:
-    	#Create a web server and define the handler to manage the
-    	#incoming request
-    	server = HTTPServer(('', PORT_NUMBER), myHandler)
-    	print 'Started httpserver on port ' , PORT_NUMBER
+        #Create a web server and define the handler to manage the
+        #incoming request
+        server = HTTPServer(('', PORT_NUMBER), myHandler)
+        print 'Started httpserver on port ' , PORT_NUMBER
 
-    	#Wait forever for incoming htto requests
-    	server.serve_forever()
+        #Wait forever for incoming htto requests
+        server.serve_forever()
 
     except KeyboardInterrupt:
         print '^C received, shutting down the web server'
