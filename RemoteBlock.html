@@ -1,0 +1,60 @@
+<head>
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>-->
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="https://api.jquery.com/resources/events.js"></script>
+    <script>
+        var nextUrlNum = "0";
+        var loadedText = "";
+        
+        $(document).ready(function(){
+            //Get the next url of text to load
+            //And start the interval
+            $.get('next', function(data) {
+                nextUrlNum = data;
+                setTimeout(loadMoreShit,1000);
+            });
+            $( "#display-box" ).keypress(function( event ) {
+                event.preventDefault();
+                if ( event.which == 13 )
+                {
+                    $.get('send?=' + encodeURIComponent('\r'), function(data) {});
+                }
+                else
+                {
+                    $.get('send?=' + encodeURIComponent(event.key), function(data) {});
+                }
+            });
+        });
+        
+        function loadMoreShit () {
+            //Get the next bits of text
+            $.get('get?='+nextUrlNum, function(data) {
+                //Get the text box
+                var box = $("#display-box");
+                //Insert the new bits of text
+                box.val(box.val() + data);
+                loadedText = loadedText + data;
+                //Get the next url of text to load
+                $.get('next', function(data) {
+                    nextUrlNum = data;
+                    setTimeout(loadMoreShit,16);
+                });
+            });
+        }
+        
+        
+        /*document.onkeydown = function(e){
+            var n = (window.Event) ? e.which : e.keyCode;
+            $.get('send?=' + n.toString(), function(data) {
+            
+                });
+            return false;
+        }*/
+        
+    </script>
+</head>
+<body>
+    <textarea id="display-box"></textarea>
+    <!--<br/>
+    <textarea id="text-box"></textarea>-->
+</body>
