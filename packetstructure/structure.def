@@ -1,0 +1,20 @@
+VERSION:3
+version | uint8_t | Protocol version- Increments with each change to packet structure
+yikes | uint8_t | Error code bits- see [table below](#yikes-bits)
+seq | uint16_t | Sequence ID- 0 on boot, increments each packet
+time | uint32_t | GPS time, see [note](#gps-time)
+lat | uint32_t | GPS latitude, see [note](#gps-location)
+lon | uint32_t | GPS longitude, see [note](#gps-location)
+alt | uint32_t | GPS altitude, in meters*10
+horiz1 | uint16_t[12] | Horizontal probe 1 electric field- raw adc value, 1 per 5 seconds
+horiz2 | uint16_t[12] | Horizontal probe 2 electric field- raw adc value, 1 per 5 seconds
+horizD | uint16_t[12] | Horizontal delta electric field- raw adc value, 1 per 5 seconds
+vert1 | uint16_t[12] | Vertical probe 1 electric field- raw adc value
+vert2 | uint16_t[12] | Vertical probe 2 electric field- raw adc value
+vertD | uint16_t[12] | Vertical delta electric field- raw adc value
+compassX | uint16_t[12] | Magnetic field x component- raw compass value, 1 per 5 seconds
+compassY | uint16_t[12] | Magnetic field y component- raw compass value, 1 per 5 seconds
+compassZ | uint16_t[12] | Magnetic field y component- raw compass value, 1 per 5 seconds
+cVert1 | uint16_t[15] | Vertical probe 1 conductivity data- raw adc value, see [note](#conductivity)
+cVert2 | uint16_t[15] | Vertical probe 2 conductivity data- raw adc value, see [note](#conductivity)
+sup | sup_t | Supervision Field- see [table below](#sup-field)

@@ -106,3 +106,7 @@ venv.bak/
 *.json
 
 *.csv
+
+packetstructure/structure.py
+packetstructure/structure.md
+packetstructure/structure.h
