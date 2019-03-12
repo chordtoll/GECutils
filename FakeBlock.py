@@ -149,6 +149,8 @@ class myHandler(BaseHTTPRequestHandler):
                     self.wfile.write("%04x,"%o16(i[176+n*2:178+n*2]))
                 self.wfile.write("\n")
                 self.wfile.write("SUP:%08x\n"%(o32(i[206:210])))
+                self.wfile.write("BALL:%02x\n"%(ord(i[210])));
+                self.wfile.write("CUT:%02x\n"%(ord(i[211])));
                 self.wfile.write(Eee+'-'*((24*4)-8)+'\n')
                 
                 
