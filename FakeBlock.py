@@ -8,6 +8,8 @@ import sys
 import os
 import Queue
 
+import requests
+
 from selenium import webdriver
 
 import datetime
@@ -263,13 +265,21 @@ class rbthread(threading.Thread):
                         momsn+=1
 
                         if txbuf:
+                            hecksPacket = "".join(["{:02x}".format(ord(c)) for c in txbuf])
+                            r = requests.post("http://gec.calamityconductor.com/post/", data={'data': hecksPacket})
+                            print(r.status_code, r.reason)
+                        
                             try:
                               with open(os.path.join("packets","packet.%d.%d.bin"%(time.time(),o16(txbuf[2:4]))),'wb') as f:
                                 f.write(txbuf)
+                              with open(os.path.join("packets","packetHTML.%d.%d.html"%(time.time(),o16(txbuf[2:4]))),'wb') as f:
+                                f.write(r.text)
                             except:
                               os.mkdir("packets")
                               with open(os.path.join("packets","packet.%d.%d.bin"%(time.time(),o16(txbuf[2:4]))),'wb') as f:
                                 f.write(txbuf)
+                              with open(os.path.join("packets","packetHTML.%d.%d.html"%(time.time(),o16(txbuf[2:4]))),'wb') as f:
+                                f.write(r.text)
                             with open("packets.csv",'a') as f:
                                 f.write('%f,%d,%d,%d,'%(time.time(),ord(txbuf[0]),ord(txbuf[1]),o16(txbuf[2:4])))
                                 f.write('%s,%f,%f,%f,'%(gpst(txbuf[4:8]),gpsla(txbuf[8:12]),gpslo(txbuf[12:16]),gpsa(txbuf[16:20])))
