@@ -82,4 +82,4 @@ dwf.FDwfAnalogOutConfigure(hdwf, channel2, c_bool(True))
 print "Generating waveform for 10 seconds..."
 time.sleep(10)
 print "done."
-dwf.FDwfDeviceCloseAll() 
+#dwf.FDwfDeviceCloseAll() 
