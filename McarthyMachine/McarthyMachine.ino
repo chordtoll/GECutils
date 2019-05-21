@@ -22,25 +22,25 @@ void setup() {
 }
 
 void loop() {
-  digitalWrite(BALLS1, LOW);    //default signal state, (ballast fails at addressing step) EC: 2
-  digitalWrite(BALLS2, HIGH);
+  digitalWrite(BALLS1, HIGH);    //default signal state, (ballast fails at addressing step) EC: 2
+  digitalWrite(BALLS2, LOW);
   if(digitalRead(SEL0) && !digitalRead(SEL1)) //if selection pins are set to '01'
   {
-    digitalWrite(BALLS1, HIGH);               //fails at arming step EC: 4
+    digitalWrite(BALLS1, LOW);               //fails at arming step EC: 4
   }
   else if(!digitalRead(SEL0) && digitalRead(SEL1)) //if selection pins are set to '10'
   {
-    digitalWrite(BALLS1, HIGH);                    //succeeds addressing/arming step
+    digitalWrite(BALLS1, LOW);                    //succeeds addressing/arming step
     while(!ARMED){}
-    digitalWrite(BALLS2, LOW);                     //fails at firing step EC: 8
+    digitalWrite(BALLS2, HIGH);                     //fails at firing step EC: 8
   }
   else if(digitalRead(SEL0) && digitalRead(SEL1)) //if selection pins are set to '11'
   {
-    digitalWrite(BALLS1, HIGH);                   //succeeds all steps EC: 1
+    digitalWrite(BALLS1, LOW);                   //succeeds all steps EC: 1
     while(!ARMED){}
-    digitalWrite(BALLS2, LOW);
-    while(!FIRED){}
     digitalWrite(BALLS2, HIGH);
+    while(!FIRED){}
+    digitalWrite(BALLS2, LOW);
   }
   while(!IDLED){} //wait for ballast to be idle before switching inputs
 }

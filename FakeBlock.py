@@ -114,7 +114,6 @@ class myHandler(BaseHTTPRequestHandler):
         #h2 does not work
         #v1 does not work
         #v2 does not work
-        
         if self.path=='/messages.txt':
             for i,Eee in zip(thread1.txes,thread1.txTimes):
                 self.wfile.write("V:%02x Y:%02x S:%04x\n"%(ord(i[0]),ord(i[1]),o16(i[2:4])))
@@ -131,27 +130,67 @@ class myHandler(BaseHTTPRequestHandler):
                 for n in xrange(12):
                     self.wfile.write("%04x,"%o16(i[68+n*2:70+n*2]))
                 self.wfile.write("\n")
-                self.wfile.write("v1:%04x v2:%04x vD:%04x\n"%(o16(i[92:94]),o16(i[94:96]),o16(i[96:98])))
-                self.wfile.write("cX:")
-                for n in xrange(12):
-                    self.wfile.write("%04x,"%o16(i[98+n*2:100+n*2]))
-                self.wfile.write("\n")
-                self.wfile.write("cY:")
-                for n in xrange(12):
-                    self.wfile.write("%04x,"%o16(i[122+n*2:124+n*2]))
-                self.wfile.write("\n")
-                self.wfile.write("CH:")
-                for n in xrange(15):
-                    self.wfile.write("%04x,"%o16(i[146+n*2:148+n*2]))
-                self.wfile.write("\n")
-                self.wfile.write("CL:")
-                for n in xrange(15):
-                    self.wfile.write("%04x,"%o16(i[176+n*2:178+n*2]))
-                self.wfile.write("\n")
-                self.wfile.write("SUP:%08x\n"%(o32(i[206:210])))
-                self.wfile.write("BALL:%02x\n"%(ord(i[210])));
-                self.wfile.write("CUT:%02x\n"%(ord(i[211])));
-                self.wfile.write(Eee+'-'*((24*4)-8)+'\n')
+               
+                if sys.argv[2] == "2":
+                  self.wfile.write("v1:%04x v2:%04x vD:%04x\n"%(o16(i[92:94]),o16(i[94:96]),o16(i[96:98])))
+                  self.wfile.write("cX:")
+                  for n in xrange(12):
+                      self.wfile.write("%04x,"%o16(i[98+n*2:100+n*2]))
+                  self.wfile.write("\n")
+                  self.wfile.write("cY:")
+                  for n in xrange(12):
+                      self.wfile.write("%04x,"%o16(i[122+n*2:124+n*2]))
+                  self.wfile.write("\n")
+                  self.wfile.write("CH:")
+                  for n in xrange(15):
+                      self.wfile.write("%04x,"%o16(i[146+n*2:148+n*2]))
+                  self.wfile.write("\n")
+                  self.wfile.write("CL:")
+                  for n in xrange(15):
+                      self.wfile.write("%04x,"%o16(i[176+n*2:178+n*2]))
+                  self.wfile.write("\n")
+                  self.wfile.write("SUP:%08x\n"%(o32(i[206:210])))
+                  self.wfile.write("BALL:%02x\n"%(ord(i[210])));
+                  self.wfile.write("CUT:%02x\n"%(ord(i[211])));
+                  self.wfile.write(Eee+'-'*((24*4)-8)+'\n')
+                
+                if sys.argv[2] == "3":
+                  self.wfile.write("v1:")
+                  for n in xrange(12):
+                    self.wfile.write("%04x,"%o16(i[92+n*2:94+n*2]))
+                  self.wfile.write("\n")
+                  self.wfile.write("v2:")
+                  for n in xrange(12):
+                    self.wfile.write("%04x,"%o16(i[116+n*2:118+n*2]))
+                  self.wfile.write("\n")
+                  self.wfile.write("vD:")
+                  for n in xrange(12):
+                    self.wfile.write("%04x,"%o16(i[140+n*2:142+n*2]))
+                  self.wfile.write("\n")
+                  self.wfile.write("cX:")
+                  for n in xrange(12):
+                      self.wfile.write("%04x,"%o16(i[164+n*2:166+n*2]))
+                  self.wfile.write("\n")
+                  self.wfile.write("cY:")
+                  for n in xrange(12):
+                      self.wfile.write("%04x,"%o16(i[188+n*2:190+n*2]))
+                  self.wfile.write("\n")
+                  self.wfile.write("cZ:")
+                  for n in xrange(12):
+                      self.wfile.write("%04x,"%o16(i[212+n*2:214+n*2]))
+                  self.wfile.write("\n")
+                  self.wfile.write("CH:")
+                  for n in xrange(15):
+                      self.wfile.write("%04x,"%o16(i[236+n*2:238+n*2]))
+                  self.wfile.write("\n")
+                  self.wfile.write("CL:")
+                  for n in xrange(15):
+                      self.wfile.write("%04x,"%o16(i[266+n*2:268+n*2]))
+                  self.wfile.write("\n")
+                  self.wfile.write("SUP:%08x\n"%(o32(i[296:300])))
+                  self.wfile.write("BALL:%02x\n"%(ord(i[300])));
+                  self.wfile.write("CUT:%02x\n"%(ord(i[301])));
+                  self.wfile.write(Eee+'-'*((24*4)-8)+'\n')
                 
                 
         if self.path=='/messages.hex':
@@ -268,20 +307,29 @@ class rbthread(threading.Thread):
 
                         if txbuf:
                             hecksPacket = "".join(["{:02x}".format(ord(c)) for c in txbuf])
-                            r = requests.post("http://gec.calamityconductor.com/post/", data={'data': hecksPacket})
-                            print(r.status_code, r.reason)
+                            try:
+                              r = requests.post("http://gec.calamityconductor.com/post/", data={'data': hecksPacket})
+                              print(r.status_code, r.reason)
+                            except:
+                              pass
                         
                             try:
                               with open(os.path.join("packets","packet.%d.%d.bin"%(time.time(),o16(txbuf[2:4]))),'wb') as f:
                                 f.write(txbuf)
-                              with open(os.path.join("packets","packetHTML.%d.%d.html"%(time.time(),o16(txbuf[2:4]))),'wb') as f:
-                                f.write(r.text)
+                              try:
+                                with open(os.path.join("packets","packetHTML.%d.%d.html"%(time.time(),o16(txbuf[2:4]))),'wb') as f:
+                                  f.write(r.text)
+                              except:
+                                pass
                             except:
                               os.mkdir("packets")
                               with open(os.path.join("packets","packet.%d.%d.bin"%(time.time(),o16(txbuf[2:4]))),'wb') as f:
                                 f.write(txbuf)
-                              with open(os.path.join("packets","packetHTML.%d.%d.html"%(time.time(),o16(txbuf[2:4]))),'wb') as f:
-                                f.write(r.text)
+                              try:
+                                with open(os.path.join("packets","packetHTML.%d.%d.html"%(time.time(),o16(txbuf[2:4]))),'wb') as f:
+                                  f.write(r.text)
+                              except:
+                                pass
                             with open("packets.csv",'a') as f:
                                 f.write('%f,%d,%d,%d,'%(time.time(),ord(txbuf[0]),ord(txbuf[1]),o16(txbuf[2:4])))
                                 f.write('%s,%f,%f,%f,'%(gpst(txbuf[4:8]),gpsla(txbuf[8:12]),gpslo(txbuf[12:16]),gpsa(txbuf[16:20])))
