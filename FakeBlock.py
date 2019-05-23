@@ -362,8 +362,8 @@ class rbthread(threading.Thread):
                             txbuf=""
                     elif cmd=='AT+SBDRB':
                         print "Read RX buffer",
-                        self.send(chr(len(rxbuf)/256))
-                        self.send(chr(len(rxbuf)%256))
+                        #self.send(chr(len(rxbuf)/256))
+                        #self.send(chr(len(rxbuf)%256))
                         self.send(rxbuf)
                         csum=sum([ord(i) for i in rxbuf])
                         self.send(chr((csum&0xFF00)>>8))
