@@ -154,7 +154,7 @@ class myHandler(BaseHTTPRequestHandler):
                   self.wfile.write("CUT:%02x\n"%(ord(i[211])));
                   self.wfile.write(Eee+'-'*((24*4)-8)+'\n')
                 
-                if sys.argv[2] == "3":
+                if sys.argv[2] > "3":
                   self.wfile.write("v1:")
                   for n in xrange(12):
                     self.wfile.write("%04x,"%o16(i[92+n*2:94+n*2]))
