@@ -2,15 +2,16 @@
 import serial
 import time
 import datetime
-pay = serial.Serial("COM7", 19200, timeout = 0.005)
-rock = serial.Serial("COM16", 19200, timeout = 0.005)
+import sys
+pay = serial.Serial(sys.argv[1], 19200, timeout = 0.005)
+rock = serial.Serial(sys.argv[2], 19200, timeout = 0.005)
 go = True
 while(go):
   thisNow = datetime.datetime.now()
   min = thisNow.minute
-  while(min == thisNow.minute):
-    with open("paystring" + str(thisNow.minute) + ".txt", "wb") as payfile:
-      with open("rockstring" + str(thisNow.minute) + ".txt", "wb") as rockfile:
+  with open("paystring" + str(thisNow.minute) + ".txt", "wb") as payfile:
+    with open("rockstring" + str(thisNow.minute) + ".txt", "wb") as rockfile:
+      while(min == thisNow.minute):
         try:
           paystring = pay.read()
           rockstring = rock.read()
