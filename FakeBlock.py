@@ -308,7 +308,7 @@ class rbthread(threading.Thread):
                         if txbuf:
                             hecksPacket = "".join(["{:02x}".format(ord(c)) for c in txbuf])
                             try:
-                              r = requests.post("http://gec.calamityconductor.com/post/", data={'data': hecksPacket})
+                              r = requests.post("http://gec.calamityconductor.com/post/", data={'data': hecksPacket ,'transmit_time' : '19-12-12 12:12:12', 'imei' : 999999999999999, 'momsn' : momsn, 'iridium_latitude' : 47.3867, 'iridium_longitude' : -122.1501, 'iridium_cep' : 0.0})
                               print(r.status_code, r.reason)
                             except:
                               pass
