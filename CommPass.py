@@ -19,6 +19,8 @@ while(go):
           pay.write(rockstring)
           rockfile.write(rockstring)
           payfile.write(paystring)
+          if len(paystring) > 0:
+            print(paystring)
           if len(rockstring) > 0:
             print(rockstring)
           thisNow = datetime.datetime.now()
