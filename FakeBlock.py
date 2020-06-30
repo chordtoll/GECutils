@@ -7,6 +7,7 @@ import serial
 import sys
 import os
 import Queue
+import random
 
 import requests
 
@@ -306,6 +307,7 @@ doRun=1
 
 class rbthread(threading.Thread):
     def __init__(self,ser):
+        random.seed()
         threading.Thread.__init__(self)
         self.ser=ser
         self.messages=Queue.Queue()
@@ -393,10 +395,16 @@ class rbthread(threading.Thread):
                         print "Reading IMEI"
                         self.send("012345678901234\r\n")
                         self.send("OK\r\n")
-                    elif cmd=='AT+SBDIX':
+                    elif cmd=='AT+SBDIX' or cmd=='AT+SBDI':
                         print "Transaction running"
                         time.sleep(1)
-                        self.send("+SBDIX,0,")
+                        if random.randrange(0,100) < int(sys.argv[3]):
+                            print("SBDI Send Pass")
+                            self.send("+SBDI,1,")
+                        else:
+                            print("SBDI Send Fail")
+                            txbuf = ""
+                            self.send("+SBDI,0,")
                         self.send(str(momsn))
                         self.send(",")
                         try:
@@ -417,7 +425,7 @@ class rbthread(threading.Thread):
                         if txbuf:
                             hecksPacket = "".join(["{:02x}".format(ord(c)) for c in txbuf])
                             try:
-                              r = requests.post("https://gec.calamityconductor.com/post/", data={'data': hecksPacket, 'transmit_time' : time.strftime("%y-%m-%d %H:%M:%S",time.gmtime()), 'iridium_latitude' : 47.6887, 'iridium_longitude' : -122.1501, 'imei' : 'CollinsLaptop', 'momsn' : momsn, 'iridium_cep' : 0.0, 'transmitted_via_satellite' : False})
+                              r = requests.post("https://gec.codyanderson.net/post/", data={'data': hecksPacket, 'transmit_time' : time.strftime("%y-%m-%d %H:%M:%S",time.gmtime()), 'iridium_latitude' : 47.6887, 'iridium_longitude' : -122.1501, 'imei' : 'CollinsLaptop', 'momsn' : momsn, 'iridium_cep' : 0.0, 'transmitted_via_satellite' : False})
                               print(r.status_code, r.reason)
                             except:
                               print("failed")
