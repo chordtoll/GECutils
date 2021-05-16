@@ -340,7 +340,7 @@ class rbthread(threading.Thread):
                         print repr(txbuf)
                         print "Calculated:",hex(sum([ord(i) for i in txbuf]))
                         print "Received:",hex(csum)
-                        self.send("OK\r\n")
+                        self.send("0\r\nOK\r\n")
                         state=0
                         continue
             if state==0:
